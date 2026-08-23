@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チームメンバー一覧</title>
+    
+    <!-- 外部URLを使わず、ファイル内に直接デザイン（CSS）を書き込みました -->
+    <style>
+        /* 全体の背景と文字の基本設定 */
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            font-family: sans-serif;
+            padding: 2rem;
+            margin: 0;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 1.5rem;
+        }
+        /* カードを並べるグリッド（スマホ・PC対応） */
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        /* カードのデザイン（白い背景、丸角、影） */
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* アバターと名前の並び */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        /* 丸い青色のアバター */
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            background-color: #2563eb;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        /* 名前と役割 */
+        .name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+        }
+        .role {
+            font-size: 0.75rem;
+            color: #2563eb;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: inline-block;
+        }
+        /* コメントの文字 */
+        .comment {
+            color: #475569;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+  <header>
+    <h1>コアチーム メンバー</h1>
+  </header>
+
+  <main>
+    <!-- ここにカードが入ります -->
+    <div id="memberGrid" class="member-grid"></div>
+  </main>
+
+  <script>
+    // JSの配列・オブジェクト（データ部分はそのままです）
+    const members = [
+      { name: "内田 広翔", role: "CEO", comment: "技術の力で社会の課題を解決し、次の10年を創る仲間を募集中です！" },
+      { name: "佐藤 浩紀", role: "会長 / 創業者", comment: "創業時の情熱を忘れず、常に新しい挑戦を続ける組織でありたい。" },
+      { name: "広瀬 康太", role: "プロジェクト責任者", comment: "最高のプロダクトは最高のチームから生まれます。進行管理はお任せを。" },
+      { name: "鈴木 怜", role: "リードエンジニア", comment: "フロントからインフラまで。モダンな技術スタックへの移行を進めています。" },
+      { name: "田中 太郎", role: "UI/UXデザイナー", comment: "ユーザーの『使いやすさ』を第一に、美しく機能的な画面を設計します。" }
+    ];
+
+    const memberGrid = document.getElementById("memberGrid");
+
+    // forEach でループして動的生成
+    members.forEach((member) => {
+      const initial = member.name.charAt(0);
+      const card = document.createElement("div");
+      
+      // 上記の<style>で定義したクラス名を割り当てます
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="avatar">${initial}</div>
+          <div>
+            <h2 class="name">${member.name}</h2>
+            <span class="role">${member.role}</span>
+          </div>
+        </div>
+        <p class="comment">${member.comment}</p>
+      `;
+
+      memberGrid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
