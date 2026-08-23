@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チームメンバー一覧</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+  <h1 class="text-2xl font-bold mb-6">チームメンバー</h1>
+  <div id="memberList" class="grid gap-4"></div>
+
+<script>
+
+const members = [
+    { name: "佐藤浩紀", role: "会長", comment:"私が創業者です"},
+    { name: "内田広翔", role: "CEO", comment:"私が代表です"},
+    { name: "広瀬康太", role: "責任者", comment:"頑張ろう！！"},
+    { name: "田中太郎", role: "デザイナー", comment:"よろしくお願いします"},
+    { name: "鈴木怜", role: "エンジニア", comment:"仲良くしてください"},
+];
+
+const memberList = document.getElementById("memberList");
+
+members.forEach((member) => {
+    const card = document.createElement("div");
+    card.className = "bg-white rounded-lg shadow p-4";
+
+
+    card.innerHTML = `
+        <h2 class="text-lg font-bold">${member.name}</h2>
+        <p class="text-blue-600 text-sm">${member.role}</p>
+        <p class="text-gray-600 mt-2">${member.comment}</p>
+    `;
+
+    memberList.appendChild(card);
+    });
+    </script>
+</body>
+</html>
