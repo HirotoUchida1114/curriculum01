@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="justify-center flex flex-col text-center py-10">
+<form class="bg-gray-100 w-80 h-auto pb-6 mx-auto rounded-lg" novalidate>
+    <h1 class="font-bold text-2xl mt-6 w-60 mx-auto rounded-lg">
+        ユーザー登録フォーム
+    </h1>
+    <div class="m-6">
+    <input type="text" id="name" required placeholder="山田太郎">
+    </div>
+    <div class="m-6">
+    <input type="email" id="email" required placeholder="~~~@///.---">
+    </div>
+    <div class="m-6">
+    <input type="password" id="password" minlength="8" required placeholder="********">
+    </div>
+    <div class="m-6 flex ml-24">
+    <h4 class="hover:text-blue-600">利用規約</h4>
+    <h4>同意</h4>
+    <input type="checkbox" id="agree" required>
+    </div>
+    <button type="submit" id="submit-btn" class="hover:text-blue-800 hover:bg-blue-200 font-bold">登録する</button>
+    <div id="message" class="py-2"></div>
+</form>
+<script src="./assets/js/form.js"></script>
+</body>
+</html>
