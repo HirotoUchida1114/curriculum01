@@ -1,4 +1,427 @@
-constでチームメンバーを定義、forEachでメンバーの要素を一人ずつ読み取っていき、divとしてカードを表示する。
-詰まった場所。タイトルの「チームメンバー」だけが表示されて他が表示されなかった。AIに聞くと単純なスペルミスが分かって、訂正すると、うまく表示できた。
-判断の記録。チームメンバーの表示順。名前順だと役職がごちゃごちゃな順で表示されてしまう。追加した順に表示することでリーダーから順に表示できた。
-AIの実装。hoverを使っていて見やすかった。デザインが良かった。
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Bean Route | 街の一杯を、たどる。</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#333333",
+              sub: "#A5A5A5",
+              paper: "#FAFAFA",
+              brand: "#C77B4A",
+            },
+            fontFamily: {
+              sans: ['"Noto Sans JP"', "sans-serif"],
+            },
+            maxWidth: {
+              content: "1120px",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="font-sans text-ink">
+
+    <!-- ==========================================================
+         ヘッダー
+         ========================================================== -->
+    <header class="fixed top-0 left-0 z-50 w-full border-b border-neutral-100 bg-white/95 backdrop-blur-sm">
+      <div class="mx-auto flex h-[70px] max-w-content items-center justify-between px-5">
+        <h1 class="text-xl font-bold tracking-wider">
+          <a href="#">Bean<span class="text-brand">Route</span></a>
+        </h1>
+
+        <nav>
+          <ul class="flex gap-6 md:gap-8">
+            <li>
+              <a
+                href="#cafe"
+                class="text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+              >
+                カフェを探す
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#about"
+                class="text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+              >
+                このサイトについて
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#contact"
+                class="text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+              >
+                お問い合わせ
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+
+    <!-- ==========================================================
+         メインビジュアル
+         ========================================================== -->
+    <section
+      class="mt-[70px] flex h-[400px] w-full items-center justify-center bg-[url('./images/hero.jpg')] bg-cover bg-center bg-no-repeat text-center"
+    >
+      <div class="px-5 text-white drop-shadow-md">
+        <h2 class="mb-4 text-4xl font-bold tracking-wide sm:text-5xl">
+          Bean Route
+        </h2>
+
+        <p class="text-base font-light tracking-widest">
+          自家焙煎からスペシャルティまで、いま行きたい9軒
+        </p>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         カフェ一覧
+         ========================================================== -->
+    <section id="cafe" class="bg-paper py-16 md:py-20">
+      <div class="mx-auto max-w-content px-5">
+
+        <h2 class="text-center text-2xl font-bold md:text-3xl">
+          CAFE LIST
+        </h2>
+
+        <p class="mt-2 text-center text-sm text-sub">
+          今週のおすすめを一覧で
+        </p>
+
+
+        <!-- タブ -->
+        <ul
+          id="cafe-tabs"
+          class="mt-8 flex flex-wrap justify-center gap-2 md:gap-3"
+        >
+          <li>
+            <button
+              type="button"
+              data-category="all"
+              class="rounded-full border border-sub px-5 py-2 text-sm"
+            >
+              すべて
+            </button>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              data-category="specialty"
+              class="rounded-full border border-sub px-5 py-2 text-sm"
+            >
+              スペシャルティ
+            </button>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              data-category="roast"
+              class="rounded-full border border-sub px-5 py-2 text-sm"
+            >
+              自家焙煎
+            </button>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              data-category="sweets"
+              class="rounded-full border border-sub px-5 py-2 text-sm"
+            >
+              スイーツ自慢
+            </button>
+          </li>
+        </ul>
+
+
+        <!-- ======================================================
+             カード
+             script.jsから生成する
+             ====================================================== -->
+        <ul
+          id="cafe-list"
+          class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-2 lg:grid-cols-3"
+        ></ul>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         このサイトについて
+         ========================================================== -->
+    <section id="about" class="py-16 md:py-20">
+      <div class="mx-auto max-w-content px-5 text-center">
+
+        <h2 class="text-2xl font-bold md:text-3xl">
+          ABOUT
+        </h2>
+
+        <p class="mx-auto mt-6 max-w-2xl text-sm leading-8 md:text-base">
+          Bean Route は、豆の産地や焙煎の考え方まで書いてあるお店だけを集めた、
+          ちいさなカフェ紹介サイトです。掲載は編集部が実際に足を運んだ店に限っています。
+        </p>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         お問い合わせ
+         ========================================================== -->
+    <section id="contact" class="bg-paper py-16 md:py-20">
+      <div class="mx-auto max-w-content px-5">
+
+        <h2 class="text-center text-2xl font-bold md:text-3xl">
+          CONTACT
+        </h2>
+
+        <p class="mt-2 text-center text-sm text-sub">
+          掲載のご相談・お問い合わせはこちらから
+        </p>
+
+
+        <form id="contact-form" class="mx-auto mt-10 max-w-xl">
+
+          <!-- 名前 -->
+          <div class="mb-6">
+            <label
+              for="name"
+              class="mb-2 block text-sm font-medium"
+            >
+              お名前
+            </label>
+
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="w-full rounded border border-sub bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+              placeholder="POSSE 太郎"
+            />
+
+            <p
+              id="name-error"
+              class="mt-2 text-sm text-red-600"
+            ></p>
+          </div>
+
+
+          <!-- メール -->
+          <div class="mb-6">
+            <label
+              for="email"
+              class="mb-2 block text-sm font-medium"
+            >
+              メールアドレス
+            </label>
+
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="w-full rounded border border-sub bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+              placeholder="taro@example.com"
+            />
+          </div>
+
+
+          <!-- 用件 -->
+          <div class="mb-6">
+            <label
+              for="category"
+              class="mb-2 block text-sm font-medium"
+            >
+              ご用件
+            </label>
+
+            <select
+              id="category"
+              name="category"
+              class="w-full rounded border border-sub bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+            >
+              <option value="掲載の相談">
+                掲載の相談
+              </option>
+
+              <option value="内容の修正">
+                内容の修正
+              </option>
+
+              <option value="その他">
+                その他
+              </option>
+            </select>
+          </div>
+
+
+          <!-- お問い合わせ内容 -->
+          <div class="mb-8">
+            <label
+              for="message"
+              class="mb-2 block text-sm font-medium"
+            >
+              お問い合わせ内容
+            </label>
+
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              class="w-full rounded border border-sub bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+              placeholder="ご自由にお書きください"
+            ></textarea>
+          </div>
+
+
+          <button
+            type="submit"
+            class="w-full rounded-full bg-brand px-8 py-4 text-sm font-bold text-white hover:opacity-80 md:w-auto"
+          >
+            送信する
+          </button>
+
+        </form>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         フッター
+         ========================================================== -->
+    <footer class="bg-ink py-10 text-center text-white">
+
+      <p class="text-lg font-bold">
+        Bean<span class="text-brand">Route</span>
+      </p>
+
+      <p class="mt-3 text-xs text-sub">
+        © 2026 Bean Route
+      </p>
+
+    </footer>
+
+
+    <!-- JavaScript -->
+    <script src="./script.js" defer></script>
+
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ここに JavaScript を書いてください。index.html からはすでに読み込まれています。
+//
+// ※ ページは必ず VSCode の Live Server で開くこと。
+//    ファイルを直接開くと data.json を読み込めません。
+// ※ 仕様書はFigmaにあります： https://www.figma.com/design/pamOd8ehnMa1bfpVjw1Yvw/?node-id=0-1
+//
+// 使える目印
+//   #cafe-list      … カード（<li>）を入れる場所
+//   #cafe-tabs      … タブ4つ。各ボタンに data-category（all / specialty / roast / sweets）
+//   #contact-form   … お問い合わせフォーム
+//   #name-error     … お名前のエラーメッセージを入れる場所
+//
+// カフェのデータは同じフォルダの data.json にあります。
+// DOMの読み込み完了後に実行
+document.addEventListener('DOMContentLoaded', () => {
+  // カフェデータを取得して表示するメイン関数
+  fetchCafeData();
+});
+
+/**
+ * data.jsonからデータを取得する関数
+ */
+async function fetchCafeData() {
+  try {
+    // 1. data.json の読み込み
+    const response = await fetch('data.json');
+    if (!response.ok) {
+      throw new Error('データの取得に失敗しました');
+    }
+    
+    // 2. JSONデータのパース
+    const data = await response.json();
+    
+    // 3. カードの生成・レンダリング
+    renderCafeCards(data);
+  } catch (error) {
+    console.error('エラー:', error);
+  }
+}
+
+/**
+ * カフェのカード一覧を画面に描画する関数
+ * @param {Array} cafes - カフェデータの配列
+ */
+function renderCafeCards(cafes) {
+  // TODO: 仕様書に合わせて、カードを挿入する親要素のセレクタを変更してください
+  const container = document.querySelector('.cafe-list-container') || document.querySelector('main');
+  
+  if (!container) return;
+
+  // コンテナを一度空にする（必要に応じて）
+  container.innerHTML = '';
+
+  // データの配列をループ処理してHTMLを生成
+  cafes.forEach(cafe => {
+    // カードのルート要素を作成
+    const card = document.createElement('div');
+    card.classList.add('cafe-card'); // 仕様書のクラス名に合わせて変更
+
+    // TODO: JSONのキー名（name, image, desc等）は仕様書やdata.jsonの中身を確認して一致させてください
+    card.innerHTML = `
+      <div class="cafe-card__image">
+        <img src="images/${cafe.image}" alt="${cafe.name}">
+      </div>
+      <div class="cafe-card__content">
+        <h3 class="cafe-card__title">${cafe.name}</h3>
+        <p class="cafe-card__description">${cafe.description || cafe.desc || ''}</p>
+        ${cafe.tags ? `<p class="cafe-card__tags">${cafe.tags.join(', ')}</p>` : ''}
+      </div>
+    `;
+
+    // 親要素に追加
+    container.appendChild(card);
+  });
+}
