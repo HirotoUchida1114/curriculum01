@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>和風モダンおみくじ</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (和風なフォント) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Sawarabi+Mincho&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Sawarabi Mincho', serif;
+      background-image: radial-gradient(#2c1d11 1px, transparent 1px), radial-gradient(#2c1d11 1px, #1a0f07 1px);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+    }
+    .font-kiwi {
+      font-family: 'Kiwi Maru', serif;
+    }
+    /* 筒のシャッフルアニメーション */
+    @keyframes shuffle {
+      0% { transform: rotate(0deg); }
+      20% { transform: rotate(-15deg) translateY(-10px); }
+      40% { transform: rotate(15deg) translateY(10px); }
+      60% { transform: rotate(-10deg) translateY(-5px); }
+      80% { transform: rotate(10deg) translateY(5px); }
+      100% { transform: rotate(0deg); }
+    }
+    .animate-shuffle {
+      animation: shuffle 0.6s ease-in-out 2;
+    }
+    /* おみくじの棒が飛び出すアニメーション */
+    @keyframes stick-out {
+      0% { transform: translateY(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-70px); opacity: 1; }
+    }
+    .animate-stick {
+      animation: stick-out 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center overflow-x-hidden text-[#f4ece1] p-4 relative">
+
+  <!-- 背景の和風装飾（鳥居や注連縄をイメージしたグラデーション） -->
+  <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-red-800 via-red-600 to-red-800 shadow-md"></div>
+  
+  <header class="text-center mb-10 z-10">
+    <h1 class="text-3xl md:text-4xl font-bold tracking-widest text-red-500 font-kiwi mb-2 drop-shadow-md">神山御神籤</h1>
+    <p class="text-sm text-amber-200 tracking-wider">ボタンを押して運勢を占いましょう</p>
+  </header>
+
+  <!-- おみくじ引きエリア -->
+  <div class="flex flex-col items-center relative min-h-[320px] justify-end pb-8">
+    
+    <!-- おみくじの棒 (初期は隠れている) -->
+    <div id="omikuji-stick" class="w-4 h-24 bg-amber-600 rounded-t border-t-2 border-amber-300 absolute left-1/2 -translate-x-1/2 bottom-36 z-0 hidden origin-bottom">
+      <span class="text-[9px] text-amber-950 font-bold block text-center pt-2 leading-none">運</span>
+    </div>
+
+    <!-- おみくじの筒 -->
+    <div id="omikuji-box" class="w-24 h-40 bg-gradient-to-b from-amber-800 to-amber-950 rounded-md shadow-2xl border-2 border-amber-600 relative flex flex-col items-center justify-between py-4 z-10 transition-transform duration-300">
+      <!-- 筒の模様・ラベル -->
+      <div class="w-1 h-full bg-amber-700 absolute left-4 top-0 opacity-30"></div>
+      <div class="w-1 h-full bg-amber-700 absolute right-4 top-0 opacity-30"></div>
+      <div class="bg-red-700 text-amber-100 text-xs px-2 py-3 rounded font-kiwi tracking-widest border border-amber-500 shadow-inner select-none pointer-events-none">
+        御<br>籤
+      </div>
+      <!-- 出し口 -->
+      <div class="w-6 h-2 bg-black rounded-full absolute -top-1 border border-amber-700"></div>
+    </div>
+
+    <!-- 紐を引く・おみくじを振るボタン -->
+    <button id="draw-btn" class="mt-8 bg-red-700 hover:bg-red-600 active:scale-95 text-amber-100 font-kiwi tracking-widest font-bold px-8 py-3 rounded-full border-2 border-amber-400 shadow-[0_0_15px_rgba(185,28,28,0.5)] transition-all duration-200 z-10">
+      御籤を振る
+    </button>
+  </div>
+
+  <!-- 結果表示モーダル (初期状態は非表示) -->
+  <div id="result-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-500">
+    
+    <!-- 和紙風おみくじ用紙 -->
+    <div id="fortune-paper" class="bg-[#fcfaf2] text-stone-800 w-full max-w-sm rounded shadow-2xl p-6 border-[6px] border-double border-red-800 relative transition-transform duration-500 scale-90 max-h-[90vh] overflow-y-auto">
+      
+      <!-- 装飾ライン -->
+      <div class="border border-red-200 p-4 flex flex-col items-center">
+        <h2 class="text-xl font-bold tracking-widest text-red-800 border-b-2 border-red-800 pb-1 mb-4 w-full text-center font-kiwi">武蔵國霊社 御神籤</h2>
+        
+        <!-- メインの運勢 -->
+        <div class="my-4 text-center">
+          <span class="text-xs text-stone-500 block mb-1">第拾二番</span>
+          <div id="fortune-rank" class="text-5xl font-extrabold text-red-700 font-kiwi tracking-widest scale-y-110 my-2">大吉</div>
+        </div>
+
+        <p id="fortune-text" class="text-sm text-stone-600 text-center my-4 leading-relaxed border-b border-stone-200 pb-4 w-full">
+          雲晴れ渡りて、あまねく光の差し込む如き大吉兆なり。何事も臆せず進むがよろし。
+        </p>
+
+        <!-- 各種運勢詳細 -->
+        <div class="w-full space-y-3 text-sm pt-2" id="fortune-details">
+          <!-- JSで動的に挿入されます -->
+        </div>
+
+        <!-- 閉じるボタン -->
+        <button id="close-btn" class="mt-6 bg-stone-800 hover:bg-stone-700 text-[#fcfaf2] text-xs font-kiwi tracking-widest px-6 py-2 rounded transition-colors duration-200">
+          再び引き直す
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="mt-10 text-xs text-stone-500 tracking-wider z-10">
+    © 2026 和風御神籤アプリ
+  </footer>
+
+  <script>
+    // おみくじのデータプール
+    const fortunePool = [
+      {
+        rank: "大吉",
+        color: "text-red-700",
+        text: "雲晴れ渡りて、あまねく光の差し込む如き大吉兆なり。何事も臆せず進むがよろし。",
+        love: "思い通りに進む。誠実な態度が吉。",
+        work: "長年の努力が実を結び、大いに出世す。",
+        wish: "心長くして待てば必ず叶う。"
+      },
+      {
+        box: "中吉",
+        rank: "中吉",
+        color: "text-amber-700",
+        text: "穏やかな波の如く、平穏にして確かな幸せあり。身の丈に合った行動が幸運を呼ぶ。",
+        love: "焦りは禁物。少しずつ距離が縮まる。",
+        work: "着実に成果が上がる。周囲への感謝を忘れずに。",
+        wish: "他人の助けを得て、思いがけず叶う。"
+      },
+      {
+        rank: "小吉",
+        color: "text-stone-700",
+        text: "小さな喜びが重なる運気なり。派手な動きは避け、足元を固める時期と心得よ。",
+        love: "互いの個性を尊重すれば、進展あり。",
+        work: "基礎を怠るな。のちに大きな実りとなる。",
+        wish: "一歩一歩進めば、やがて届く。"
+      },
+      {
+        rank: "吉",
+        color: "text-red-600",
+        text: "運気は徐々に上昇傾向にあり。新しきことを始めるには、良き好機なり。",
+        love: "素直な一言が、相手の心を動かす。",
+        work: "新たな提案や企画が通りやすい時期。",
+        wish: "急がず時を待てば、成就の兆しあり。"
+      },
+      {
+        rank: "末吉",
+        color: "text-stone-600",
+        text: "今はまだ蕾なれど、やがて花開く運勢なり。辛抱強く努力を続けるべし。",
+        love: "気長に待つべし。自然な出会いがある。",
+        work: "我慢の時。今はスキルを蓄えるべし。",
+        wish: "手違いあれど、最後には調う。"
+      },
+      {
+        rank: "凶",
+        color: "text-blue-900",
+        text: "北風の吹く冬の如き運気なり。しかし恐るるに足らず、身を慎みて春を待つべし。",
+        love: "我儘（わがまま）は災いのもと。言葉を選べ。",
+        work: "確認を怠るな。大きなミスを防ぐ鍵なり。",
+        wish: "今は叶い難し。計画を見直すべし。"
+      }
+    ];
+
+    // DOM要素の取得
+    const drawBtn = document.getElementById('draw-btn');
+    const omikujiBox = document.getElementById('omikuji-box');
+    const omikujiStick = document.getElementById('omikuji-stick');
+    const resultModal = document.getElementById('result-modal');
+    const fortunePaper = document.getElementById('fortune-paper');
+    const closeBtn = document.getElementById('close-btn');
+
+    // おみくじを引くアクション
+    drawBtn.addEventListener('click', () => {
+      // ボタンを無効化
+      drawBtn.disabled = true;
+      drawBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      // 1. 筒を振るアニメーションを開始
+      omikujiBox.classList.add('animate-shuffle');
+
+      // 2. 筒を振り終わったタイミングで棒を飛び出させる
+      setTimeout(() => {
+        omikujiStick.classList.remove('hidden');
+        omikujiStick.classList.add('animate-stick');
+      }, 1200); // 0.6s * 2回シャッフル
+
+      // 3. 棒が出切った後、おみくじの紙（結果モーダル）をふわっと表示
+      setTimeout(() => {
+        // ランダムで結果を選択
+        const result = fortunePool[Math.floor(Math.random() * fortunePool.length)];
+
+        // 結果を反映
+        document.getElementById('fortune-rank').innerText = result.rank;
+        document.getElementById('fortune-rank').className = `text-5xl font-extrabold font-kiwi tracking-widest scale-y-110 my-2 ${result.color}`;
+        document.getElementById('fortune-text').innerText = result.text;
+
+        // 詳細項目（恋愛・仕事・願望）を生成
+        const detailsContainer = document.getElementById('fortune-details');
+        detailsContainer.innerHTML = `
+          <div class="flex border-b border-dashed border-stone-200 pb-1">
+            <span class="font-bold text-red-800 w-16 flex-shrink-0 font-kiwi">【恋愛】</span>
+            <span class="text-stone-600">${result.love}</span>
+          </div>
+          <div class="flex border-b border-dashed border-stone-200 pb-1">
+            <span class="font-bold text-red-800 w-16 flex-shrink-0 font-kiwi">【仕事】</span>
+            <span class="text-stone-600">${result.work}</span>
+          </div>
+          <div class="flex border-b border-dashed border-stone-200 pb-1">
+            <span class="font-bold text-red-800 w-16 flex-shrink-0 font-kiwi">【願望】</span>
+            <span class="text-stone-600">${result.wish}</span>
+          </div>
+        `;
+
+        // モーダルを表示（Tailwindクラスの操作）
+        resultModal.classList.remove('opacity-0', 'pointer-events-none');
+        fortunePaper.classList.remove('scale-90');
+        fortunePaper.classList.add('scale-100');
+
+      }, 1900); // シャッフル(1200ms) + 棒出し(500ms) + 少しのタメ
+    });
+
+    // モーダルを閉じる（リセット）
+    closeBtn.addEventListener('click', () => {
+      // モーダルを隠す
+      resultModal.classList.add('opacity-0', 'pointer-events-none');
+      fortunePaper.classList.remove('scale-100');
+      fortunePaper.classList.add('scale-90');
+
+      // アニメーション用クラスと状態のリセット
+      setTimeout(() => {
+        omikujiBox.classList.remove('animate-shuffle');
+        omikujiStick.classList.add('hidden');
+        omikujiStick.classList.remove('animate-stick');
+        
+        // ボタンを元に戻す
+        drawBtn.disabled = false;
+        drawBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }, 500); // フェードアウト完了を待ってリセット
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>おすすめ書籍紹介ページ (Vanilla JS)</title>
+  <!-- 見た目を整えるための Tailwind CSS (CDN版) -->
+  <script src="https://tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body class="bg-slate-50 text-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-6xl mx-auto">
+    <!-- ヘッダーセクション -->
+    <header class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
+        📚 おすすめ書籍紹介
+      </h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        エンジニアとして成長する上で、特につまずいた時や設計に迷った時に何度も読み返している本たちです。
+      </p>
+    </header>
+
+    <!-- 書籍カードが並ぶグリッドコンテナ（ここにJSでカードを挿入します） -->
+    <main id="book-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- JavaScriptによってここにカードが動的に追加されます -->
+    </main>
+  </div>
+
+  <!-- JavaScript の記述 -->
+  <script>
+    // ==========================================
+    // 1. 書籍データの配列（タイトル・著者・評価・コメントを含む3冊）
+    // ==========================================
+    const booksData = [
+      {
+        id: 'book-01',
+        title: 'リーダブルコード ―より良いコードを書くためのシンプルで実践的なテクニック',
+        author: 'Dustin Boswell, Trevor Foucher',
+        rating: 5,
+        comment: 'プログラミングを始めたら最初に読みたい一冊。変数名一つとっても、他人が読みやすくなる工夫が詰まっていて世界が変わります。',
+      },
+      {
+        id: 'book-02',
+        title: '達人プログラマー ―熟達に向けたあなたの旅',
+        author: 'Andrew Hunt, David Thomas',
+        rating: 4,
+        comment: '技術的な知識だけでなく、エンジニアとしてのキャリア、設計思想、問題への向き合い方など、一生モノの姿勢を学べます。',
+      },
+      {
+        id: 'book-03',
+        title: 'Webを支える技術 ―HTTP、URI、HTML、そしてREST',
+        author: '山本 陽平',
+        rating: 5,
+        comment: '普段何気なく使っているWebの仕組みを基礎から綺麗に整理して学べます。ReactでAPIと通信する際にも役立つ知識が満載です。',
+      },
+    ];
+
+    // ==========================================
+    // 2. BookCard に相当するHTML文字列を生成する関数
+    // ==========================================
+    function createBookCardHtml(book) {
+      // 5段階評価の星マーク（★）を生成する処理
+      let starsHtml = '';
+      for (let i = 0; i < 5; i++) {
+        const isFilled = i < book.rating;
+        starsHtml += `<span class="text-lg ${isFilled ? 'text-amber-400' : 'text-gray-200'}">★</span>`;
+      }
+
+      // テンプレートリテラルを使ってHTML構造を文字列として返す
+      return `
+        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 p-6 flex flex-col justify-between h-full" data-key="${book.id}">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900 mb-1 leading-snug">
+              ${book.title}
+            </h3>
+            <p class="text-sm font-medium text-indigo-600 mb-3">
+              著者: ${book.author}
+            </p>
+            <div class="flex items-center mb-4">
+              <span class="text-sm font-semibold text-gray-500 mr-2">評価:</span>
+              <div class="flex space-x-0.5">
+                ${starsHtml}
+              </div>
+              <span class="text-xs text-gray-400 ml-1">(${book.rating}/5)</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-3.5 border-l-4 border-indigo-500">
+            <p class="text-sm text-gray-700 italic leading-relaxed">
+              "${book.comment}"
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==========================================
+    // 3. map を使ってデータを展開し、画面に描画する処理
+    // ==========================================
+    // 書籍を表示するための入れ物（DOM要素）を取得
+    const bookGrid = document.getElementById('book-grid');
+
+    // mapを使って、書籍データ配列からHTML文字列の配列を作成
+    const cardHtmlArray = booksData.map(book => createBookCardHtml(book));
+
+    // join('') で1つの長い文字列に結合し、HTMLとしてコンテナに一気に挿入
+    bookGrid.innerHTML = cardHtmlArray.join('');
+
+  </script>
+</body>
+</html>

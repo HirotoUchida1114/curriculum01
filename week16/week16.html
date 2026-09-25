@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>和風おみくじ</title>
+  <!-- Tailwind CSS -->
+  <script src="https://jsdelivr.net"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts (和風のフォント) -->
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Yuji+Syuku&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kiwi Maru', 'Yuji Syuku', serif;
+    }
+    /* 箱が揺れるアニメーション */
+    @keyframes shake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-5px, -5px) rotate(-3deg); }
+      20% { transform: translate(5px, 5px) rotate(3deg); }
+      30% { transform: translate(-5px, 5px) rotate(-3deg); }
+      40% { transform: translate(5px, -5px) rotate(3deg); }
+      50% { transform: translate(-5px, -5px) rotate(-2deg); }
+      60% { transform: translate(5px, 5px) rotate(2deg); }
+      70% { transform: translate(-5px, 5px) rotate(-1deg); }
+      80% { transform: translate(5px, -5px) rotate(1deg); }
+      90% { transform: translate(-2px, -2px) rotate(0deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .animate-shake {
+      animation: shake 0.6s ease-in-out;
+    }
+    /* 棒が飛び出すアニメーション */
+    @keyframes moveUp {
+      0% { transform: translateY(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-110px); opacity: 1; }
+    }
+    .animate-stick-out {
+      animation: moveUp 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#fcf8f2] min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden text-[#3a2412]">
+
+  <!-- 背景の和風伝統文様風の装飾（うっすらとした明るい朱色の円） -->
+  <div class="absolute w-96 h-96 bg-[#f7e4d4] rounded-full -top-20 -left-20 opacity-40 pointer-events-none"></div>
+  <div class="absolute w-[500px] h-[500px] bg-[#f7e4d4] rounded-full -bottom-40 -right-20 opacity-40 pointer-events-none"></div>
+
+  <!-- メインコンテンツ -->
+  <div class="z-10 text-center max-w-xl w-full">
+    <h1 class="text-4xl md:text-5xl font-bold mb-12 text-[#8b1e16] tracking-widest border-b-4 border-double border-[#8b1e16] pb-3 inline-block">
+    武蔵村山大社おみくじ
+    </h1>
+
+    <!-- おみくじの演出エリア -->
+    <div class="relative flex justify-center items-center h-80 mb-10">
+      
+      <!-- 飛び出すおみくじの棒 (初期状態は隠れている) -->
+      <div id="omikuji-stick" class="absolute w-6 h-36 bg-[#d9a05b] rounded-t border-t-4 border-x border-[#b37836] shadow-md hidden z-10 flex items-center justify-center text-xs font-bold text-[#3a2412] writing-mode-vertical">
+        <span class="rotate-180" style="writing-mode: vertical-rl;">運</span>
+      </div>
+
+      <!-- リアルなおみくじの箱 -->
+      <div id="omikuji-box" class="relative w-40 h-64 bg-gradient-to-b from-[#965e2b] via-[#7d4b1f] to-[#593311] rounded-lg shadow-[5px_15px_30px_rgba(0,0,0,0.3)] border-2 border-[#593311] z-20 flex flex-col justify-between items-center py-4">
+        <!-- 箱の上の穴・蓋部分の表現 -->
+        <div class="w-20 h-4 bg-[#3d2008] rounded-full shadow-inner border border-[#211003]"></div>
+        <!-- 箱の装飾（和風の帯ラベル） -->
+        <div class="w-full bg-[#f4ebd0] py-4 shadow-sm border-y-2 border-[#8b1e16] flex items-center justify-center">
+          <p class="text-2xl font-bold text-[#8b1e16] tracking-widest" style="writing-mode: vertical-rl;">おみくじ</p>
+        </div>
+        <!-- 箱の底の飾り足のニュアンス -->
+        <div class="w-32 h-2 bg-[#3d2008] rounded"></div>
+      </div>
+
+    </div>
+
+    <!-- おみくじを引くボタン -->
+    <button id="draw-btn" class="text-2xl font-bold bg-[#8b1e16] text-[#fcf8f2] px-10 py-4 rounded-full shadow-lg hover:bg-[#a6241b] active:scale-95 transition-all duration-200 cursor-pointer border-2 border-[#701610]">
+      おみくじを引く
+    </button>
+  </div>
+
+  <!-- 結果発表モーダル（おみくじの紙） -->
+  <div id="result-modal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-500">
+    <div class="bg-[#fcfaf2] border-4 border-double border-[#8b1e16] w-full max-w-md p-8 md:p-10 rounded shadow-2xl relative text-center transform scale-90 transition-transform duration-500 max-h-[90vh] overflow-y-auto" id="modal-card">
+      
+      <!-- おみくじの紙の上部飾り -->
+      <div class="text-[#8b1e16] text-xl font-bold tracking-widest mb-6 border-b border-dashed border-[#8b1e16] pb-2">
+        武蔵 御神籤
+      </div>
+
+      <!-- メインの運勢（大吉など：文字サイズを大きく調整） -->
+      <div class="my-6">
+        <span class="text-xs text-[#8b1e16] block mb-1">運勢</span>
+        <h2 id="result-fortune" class="text-6xl md:text-7xl font-bold text-[#8b1e16] tracking-widest animate-bounce">
+          大吉
+        </h2>
+      </div>
+
+      <!-- 個別の運勢項目（仕事・恋愛・その他：文字を大きめに見やすく） -->
+      <div class="text-left space-y-5 border-t border-b border-dashed border-[#8b1e16] py-6 my-6 text-lg md:text-xl">
+        <div class="flex items-start">
+          <span class="font-bold text-[#8b1e16] w-24 shrink-0 border-r border-[#8b1e16] mr-4 pr-2 text-right">仕事</span>
+          <p id="result-work" class="text-[#4a321a]"></p>
+        </div>
+        <div class="flex items-start">
+          <span class="font-bold text-[#8b1e16] w-24 shrink-0 border-r border-[#8b1e16] mr-4 pr-2 text-right">恋愛</span>
+          <p id="result-love" class="text-[#4a321a]"></p>
+        </div>
+        <div class="flex items-start">
+          <span class="font-bold text-[#8b1e16] w-24 shrink-0 border-r border-[#8b1e16] mr-4 pr-2 text-right">学問</span>
+          <p id="result-study" class="text-[#4a321a]"></p>
+        </div>
+        <div class="flex items-start">
+          <span class="font-bold text-[#8b1e16] w-24 shrink-0 border-r border-[#8b1e16] mr-4 pr-2 text-right">失物</span>
+          <p id="result-lost" class="text-[#4a321a]"></p>
+        </div>
+      </div>
+
+      <!-- もう一度引くボタン -->
+      <button id="close-btn" class="mt-4 text-xl bg-[#3a2412] text-[#fcf8f2] px-8 py-3 rounded hover:bg-[#54351a] transition-colors cursor-pointer">
+        閉じる
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // おみくじのデータプール
+    const omikujiData = [
+      {
+        fortune: '大吉',
+        work: 'これまでの努力が実を結び、大きな成果を得られます。自信を持って進め。',
+        love: '最高の出会いあり。素直な気持ちを伝えることで、想いが成就します。',
+        study: '集中力が最高潮に高まっています。難関突破の好機なり。',
+        lost: '間もなく見つかります。身近な引き出しの中を探すが吉。'
+      },
+      {
+        fortune: '中吉',
+        work: '順調に進展します。周囲との協調性を大切にすれば、さらに運気が上昇。',
+        love: '焦りは禁物。少しずつ距離を縮めていくことで、良い関係が築けます。',
+        study: '一歩一歩の積み重ねが実力となります。油断せず励め。',
+        lost: '思いがけない場所から出てきます。諦めずに待つこと。'
+      },
+      {
+        fortune: '小吉',
+        work: '派手な動きは避け、足元を固める時。ルーティンワークを丁寧に。',
+        love: 'いつも通りの自然体が吉。聞き手に回ることで好感度アップ。',
+        study: '基礎をしっかり復習しましょう。後々大きな力になります。',
+        lost: '遅くなって見つかる可能性あり。カバンの底を確認せよ。'
+      },
+      {
+        fortune: '吉',
+        work: '平凡に見えて着実に前進しています。新しい挑戦への準備期間。',
+        love: '誠実な態度が実を結びます。派手な演出より心のこもった会話を。',
+        study: '成果が出るまであと一息。継続こそが最大の武器となります。',
+        lost: '他人が持っている、または預かっている可能性あり。聞いてみよ。'
+      },
+      {
+        fortune: '末吉',
+        work: '今は耐える時。無理に意見を通そうとせず、周囲の流れに身を任せて。',
+        love: '誤解が生じやすい時期。言葉選びは慎重に、優しさを持って接して。',
+        study: '苦手科目に目を向けるチャンス。今克服すれば未来は明るい。',
+        lost: '見つかりにくいですが、諦めた頃にひょっこり出てくるでしょう。'
+      }
+    ];
+
+    const drawBtn = document.getElementById('draw-btn');
+    const closeBtn = document.getElementById('close-btn');
+    const omikujiBox = document.getElementById('omikuji-box');
+    const omikujiStick = document.getElementById('omikuji-stick');
+    const resultModal = document.getElementById('result-modal');
+    const modalCard = document.getElementById('modal-card');
+
+    const resultFortune = document.getElementById('result-fortune');
+    const resultWork = document.getElementById('result-work');
+    const resultLove = document.getElementById('result-love');
+    const resultStudy = document.getElementById('result-study');
+    const resultLost = document.getElementById('result-lost');
+
+    drawBtn.addEventListener('click', () => {
+      // ボタンを一時無効化
+      drawBtn.disabled = true;
+      
+      // 前回の状態をリセット
+      omikujiStick.classList.add('hidden');
+      omikujiStick.classList.remove('animate-stick-out');
+
+      // 1. 箱を揺らすアニメーション
+      omikujiBox.classList.add('animate-shake');
+
+      // 2. 揺れが終わったタイミング（0.6秒後）で棒を飛び出させる
+      setTimeout(() => {
+        omikujiBox.classList.remove('animate-shake');
+        omikujiStick.classList.remove('hidden');
+        omikujiStick.classList.add('animate-stick-out');
+      }, 600);
+
+      // 3. 棒が出切ったタイミング（さらに0.6秒後）で結果のおみくじ用紙を表示
+      setTimeout(() => {
+        // ランダムに結果を選択
+        const randomIndex = Math.floor(Math.random() * omikujiData.length);
+        const result = omikujiData[randomIndex];
+
+        // テキストをモーダルに反映
+        resultFortune.textContent = result.fortune;
+        resultWork.textContent = result.work;
+        resultLove.textContent = result.love;
+        resultStudy.textContent = result.study;
+        resultLost.textContent = result.lost;
+
+        // モーダルを表示（ふわっと浮き出る演出）
+        resultModal.classList.remove('hidden');
+        setTimeout(() => {
+          resultModal.classList.remove('opacity-0');
+          modalCard.classList.remove('scale-90');
+        }, 50);
+      }, 1200);
+    });
+
+    // 閉じるボタンの処理
+    closeBtn.addEventListener('click', () => {
+      resultModal.classList.add('opacity-0');
+      modalCard.classList.add('scale-90');
+      
+      setTimeout(() => {
+        resultModal.classList.add('hidden');
+        omikujiStick.classList.add('hidden');
+        omikujiStick.classList.remove('animate-stick-out');
+        drawBtn.disabled = false; // ボタンを再有効化
+      }, 500);
+    });
+  </script>
+</body>
+</html>
