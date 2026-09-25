@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite Counter App</title>
+    <style>
+      /* 簡単な見た目の調整（必要に応じて変更してください） */
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f9f9f9;
+      }
+      #app {
+        text-align: center;
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      #counter-value {
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 1rem 0;
+      }
+      button {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>カウンターアプリ</h1>
+      <!-- カウントを表示する要素 -->
+      <div id="counter-value">0</div>
+      
+      <!-- 操作用ボタンの配置 -->
+      <div class="buttons">
+        <button id="btn-decrease">− 減らす</button>
+        <button id="btn-reset">リセット</button>
+        <button id="btn-increase">+ 増やす</button>
+      </div>
+    </div>
+
+    <!-- JavaScriptをここに統合（Viteで動かすため type="module" を指定） -->
+    <script type="module">
+      // カウントの状態を管理する変数
+      let count = 0;
+
+      // DOM要素の取得
+      const counterValue = document.getElementById('counter-value');
+      const btnIncrease = document.getElementById('btn-increase');
+      const btnDecrease = document.getElementById('btn-decrease');
+      const btnReset = document.getElementById('btn-reset');
+
+      // 画面のカウント表示を更新する関数
+      function updateDisplay() {
+        counterValue.textContent = count;
+      }
+
+      // 「+」または「増やす」ボタン（カウントを +1）
+      btnIncrease.addEventListener('click', () => {
+        count++;
+        updateDisplay();
+      });
+
+      // 「−」または「減らす」ボタン（カウントを −1）
+      btnDecrease.addEventListener('click', () => {
+        count--;
+        updateDisplay();
+      });
+
+      // 「リセット」ボタン（カウントを 0 に戻す）
+      btnReset.addEventListener('click', () => {
+        count = 0;
+        updateDisplay();
+      });
+    </script>
+  </body>
+</html>
